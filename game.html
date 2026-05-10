@@ -2,73 +2,287 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>The Key That Doesn't Fit</title>
+<title>The Key That Doesn't Fit – SVG Version</title>
 <style>
+  :root {
+    --bg: #05060a;
+    --panel: #111827;
+    --accent: #38bdf8;
+    --accent-soft: #0ea5e9;
+    --door: #1f2937;
+    --door-edge: #4b5563;
+    --key-gold: #facc15;
+    --key-gold-dark: #eab308;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
   body {
-    background: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
+    margin: 0;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    background: radial-gradient(circle at top, #0f172a 0, #020617 55%, #000 100%);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #e5e7eb;
   }
-  #game {
+
+  #game-wrapper {
+    width: 720px;
+    max-width: 100%;
+    padding: 20px 24px 24px;
+    background: linear-gradient(145deg, #020617, #020617, #020617, #020617);
+    border-radius: 18px;
+    border: 1px solid #1f2937;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(148, 163, 184, 0.08);
     position: relative;
-    width: 600px;
-    height: 300px;
-    border: 2px solid #444;
-    background: #222;
+    overflow: hidden;
   }
-  #door {
-    position: absolute;
-    right: 80px;
-    top: 50px;
-    width: 120px;
-    height: 200px;
-    background: #6b4f2a;
-    border-radius: 4px;
+
+  #header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
   }
-  #lock {
-    position: absolute;
-    right: 20px;
-    top: 130px;
-    width: 20px;
-    height: 40px;
-    background: #ccc;
-    border-radius: 5px;
+
+  #title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #9ca3af;
   }
-  #key {
-    position: absolute;
-    left: 40px;
-    top: 140px;
-    width: 80px;
-    height: 20px;
-    background: gold;
-    border-radius: 10px;
-    cursor: grab;
+
+  #status-pill {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #e0f2fe;
+    background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.25), transparent 55%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
+
+  #status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+  }
+
+  #game-panel {
+    position: relative;
+    background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+    border-radius: 14px;
+    border: 1px solid #111827;
+    padding: 18px 18px 16px;
+  }
+
+  #game-area {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
   #message {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 14px;
+    margin-top: 10px;
+    font-size: 13px;
     text-align: center;
+    color: #9ca3af;
+  }
+
+  #message span {
+    color: var(--accent);
+  }
+
+  /* SVG styling */
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .door-body {
+    fill: var(--door);
+    stroke: var(--door-edge);
+    stroke-width: 2;
+  }
+
+  .door-panel {
+    fill: #111827;
+    opacity: 0.9;
+  }
+
+  .lock-body {
+    fill: #e5e7eb;
+  }
+
+  .lock-keyhole {
+    fill: #020617;
+  }
+
+  .key-body {
+    fill: url(#keyGradient);
+    cursor: grab;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+    transition: transform 0.15s ease-out;
+  }
+
+  .key-body.grabbing {
+    cursor: grabbing;
+    transform: scale(1.03);
+  }
+
+  .glow-orbit {
+    fill: none;
+    stroke: rgba(56, 189, 248, 0.25);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 6;
+    animation: orbit 14s linear infinite;
+  }
+
+  .bg-particle {
+    fill: rgba(148, 163, 184, 0.35);
+    animation: float 10s ease-in-out infinite alternate;
+  }
+
+  .bg-particle:nth-child(2) { animation-duration: 13s; }
+  .bg-particle:nth-child(3) { animation-duration: 16s; }
+
+  @keyframes orbit {
+    to {
+      stroke-dashoffset: -200;
+    }
+  }
+
+  @keyframes float {
+    from {
+      transform: translateY(0px);
+      opacity: 0.4;
+    }
+    to {
+      transform: translateY(-18px);
+      opacity: 0.9;
+    }
+  }
+
+  .bounce {
+    animation: bounce-back 0.25s ease-out;
+  }
+
+  @keyframes bounce-back {
+    0%   { transform: translateX(0); }
+    40%  { transform: translateX(-10px); }
+    70%  { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 11px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+  }
+
+  #hint-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid #374151;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #9ca3af;
   }
 </style>
 </head>
 <body>
-<div id="game">
-  <div id="door"></div>
-  <div id="lock"></div>
-  <div id="key"></div>
-  <div id="message">Drag the key toward the lock...</div>
+<div id="game-wrapper">
+  <div id="header">
+    <div id="title">Interactive micro–puzzle</div>
+    <div id="status-pill">
+      <div id="status-dot"></div>
+      Live prototype
+    </div>
+  </div>
+
+  <div id="game-panel">
+    <div id="game-area">
+      <svg viewBox="0 0 600 260">
+        <!-- Background particles -->
+        <circle class="bg-particle" cx="80" cy="210" r="18" />
+        <circle class="bg-particle" cx="520" cy="40" r="14" />
+        <circle class="bg-particle" cx="300" cy="60" r="10" />
+
+        <!-- Orbit line -->
+        <ellipse class="glow-orbit" cx="300" cy="130" rx="260" ry="110" />
+
+        <!-- Door group -->
+        <g id="door-group" transform="translate(380,40)">
+          <rect class="door-body" x="0" y="0" width="140" height="200" rx="8" />
+          <rect class="door-panel" x="18" y="20" width="104" height="60" rx="6" />
+          <rect class="door-panel" x="18" y="110" width="104" height="60" rx="6" />
+          <!-- Lock -->
+          <g id="lock" transform="translate(104,88)">
+            <rect class="lock-body" x="0" y="0" width="22" height="40" rx="6" />
+            <circle class="lock-keyhole" cx="11" cy="16" r="4" />
+            <rect class="lock-keyhole" x="9" y="18" width="4" height="10" rx="2" />
+          </g>
+        </g>
+
+        <!-- Key group (draggable) -->
+        <defs>
+          <linearGradient id="keyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#fef9c3"/>
+            <stop offset="45%" stop-color="#facc15"/>
+            <stop offset="100%" stop-color="#eab308"/>
+          </linearGradient>
+        </defs>
+
+        <g id="key-group" transform="translate(120,140)">
+          <!-- Key head -->
+          <circle cx="0" cy="0" r="20" fill="url(#keyGradient)" />
+          <circle cx="0" cy="0" r="9" fill="#0f172a" />
+          <!-- Key shaft -->
+          <rect x="20" y="-6" width="80" height="12" rx="4" class="key-body" />
+          <!-- Teeth -->
+          <rect x="70" y="6" width="10" height="10" rx="2" class="key-body" />
+          <rect x="55" y="6" width="10" height="10" rx="2" class="key-body" />
+        </g>
+      </svg>
+
+      <div id="hint">
+        <div id="hint-icon">?</div>
+        Drag the key toward the lock
+      </div>
+    </div>
+
+    <div id="message">
+      <span>Goal:</span> Try to insert the key into the lock. It looks right… but it will never quite fit.
+    </div>
+  </div>
 </div>
 
 <script>
-  const key = document.getElementById('key');
+  const svg = document.querySelector('svg');
+  const keyGroup = document.getElementById('key-group');
   const lock = document.getElementById('lock');
   const msg = document.getElementById('message');
 
@@ -76,43 +290,76 @@
   let offsetX = 0;
   let offsetY = 0;
 
-  key.addEventListener('mousedown', (e) => {
+  // Helper: get mouse position in SVG coordinates
+  function getSVGPoint(evt) {
+    const pt = svg.createSVGPoint();
+    pt.x = evt.clientX;
+    pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  keyGroup.addEventListener('mousedown', (e) => {
     dragging = true;
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
-    key.style.cursor = 'grabbing';
+    const pt = getSVGPoint(e);
+    const transform = keyGroup.transform.baseVal.consolidate();
+    const currentX = transform ? transform.matrix.e : 0;
+    const currentY = transform ? transform.matrix.f : 0;
+
+    offsetX = pt.x - currentX;
+    offsetY = pt.y - currentY;
+
+    keyGroup.classList.add('grabbing');
   });
 
   document.addEventListener('mouseup', () => {
+    if (!dragging) return;
     dragging = false;
-    key.style.cursor = 'grab';
+    keyGroup.classList.remove('grabbing');
     checkCollision();
   });
 
   document.addEventListener('mousemove', (e) => {
     if (!dragging) return;
-    const rect = key.parentElement.getBoundingClientRect();
-    const x = e.clientX - rect.left - offsetX;
-    const y = e.clientY - rect.top - offsetY;
-    key.style.left = x + 'px';
-    key.style.top = y + 'px';
+    const pt = getSVGPoint(e);
+    const x = pt.x - offsetX;
+    const y = pt.y - offsetY;
+
+    keyGroup.setAttribute('transform', `translate(${x},${y})`);
   });
 
+  function getBBoxCenter(element) {
+    const bbox = element.getBBox();
+    return {
+      x: bbox.x + bbox.width / 2,
+      y: bbox.y + bbox.height / 2,
+      width: bbox.width,
+      height: bbox.height
+    };
+  }
+
   function checkCollision() {
-    const keyRect = key.getBoundingClientRect();
-    const lockRect = lock.getBoundingClientRect();
+    const keyBox = getBBoxCenter(keyGroup);
+    const lockBox = getBBoxCenter(lock);
 
     const overlap =
-      keyRect.right > lockRect.left &&
-      keyRect.left < lockRect.right &&
-      keyRect.bottom > lockRect.top &&
-      keyRect.top < lockRect.bottom;
+      keyBox.x + keyBox.width / 2 > lockBox.x - lockBox.width / 2 &&
+      keyBox.x - keyBox.width / 2 < lockBox.x + lockBox.width / 2 &&
+      keyBox.y + keyBox.height / 2 > lockBox.y - lockBox.height / 2 &&
+      keyBox.y - keyBox.height / 2 < lockBox.y + lockBox.height / 2;
 
     if (overlap) {
-      msg.textContent = "The key doesn't fit... maybe it's the wrong one.";
-      key.style.left = (parseInt(key.style.left) - 20) + 'px';
+      msg.innerHTML = `<span>Result:</span> The key doesn’t fit. Right idea, wrong key.`;
+      // Bounce animation: temporarily add class
+      keyGroup.classList.add('bounce');
+      setTimeout(() => keyGroup.classList.remove('bounce'), 260);
+
+      // Slightly push the key back
+      const transform = keyGroup.transform.baseVal.consolidate();
+      const currentX = transform ? transform.matrix.e : 0;
+      const currentY = transform ? transform.matrix.f : 0;
+      keyGroup.setAttribute('transform', `translate(${currentX - 12},${currentY})`);
     } else {
-      msg.textContent = "Drag the key toward the lock...";
+      msg.innerHTML = `<span>Goal:</span> Try to insert the key into the lock. It looks right… but it will never quite fit.`;
     }
   }
 </script>
