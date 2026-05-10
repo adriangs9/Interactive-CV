@@ -36,6 +36,7 @@
     padding: 20px;
     border: 1px solid var(--border);
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    position: relative;
   }
 
   #game-area {
@@ -78,30 +79,58 @@
     100% { transform: translateX(0); }
   }
 
+  /* Door opening animation */
+  .door-open {
+    animation: openDoor 1s ease-out forwards;
+  }
+
+  @keyframes openDoor {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(-70deg); }
+  }
+
   #message {
     margin-top: 12px;
     font-size: 14px;
     color: var(--muted);
   }
 
-  #message span {
+  #big-success {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    font-weight: 700;
     color: var(--accent);
-    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  #big-success.show {
+    opacity: 1;
   }
 </style>
 </head>
 <body>
 
 <div id="wrapper">
+
+  <div id="big-success">You found the key for your company!<br>Opening profile…</div>
+
   <div id="game-area">
     <svg viewBox="0 0 600 260">
 
       <!-- Door -->
-      <g id="door" transform="translate(380,40)">
-        <rect x="0" y="0" width="140" height="200" rx="10"
-              fill="var(--door)" stroke="var(--door-edge)" stroke-width="2"/>
-        <rect x="20" y="22" width="100" height="60" rx="6" fill="#e2e8f0"/>
-        <rect x="20" y="112" width="100" height="60" rx="6" fill="#e2e8f0"/>
+      <g id="door-group" transform="translate(380,40)">
+        <g id="door">
+          <rect x="0" y="0" width="140" height="200" rx="10"
+                fill="var(--door)" stroke="var(--door-edge)" stroke-width="2"/>
+          <rect x="20" y="22" width="100" height="60" rx="6" fill="#e2e8f0"/>
+          <rect x="20" y="112" width="100" height="60" rx="6" fill="#e2e8f0"/>
+        </g>
 
         <!-- Lock -->
         <g id="lock" transform="translate(104,88)">
@@ -112,7 +141,7 @@
         </g>
       </g>
 
-      <!-- Key 1 (wrong) -->
+      <!-- Key 1 -->
       <g id="key1" class="key" data-key="1" transform="translate(80,70)">
         <circle cx="0" cy="0" r="16" fill="var(--key1)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key1)"/>
@@ -120,7 +149,7 @@
         <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key1)"/>
       </g>
 
-      <!-- Key 2 (wrong) -->
+      <!-- Key 2 -->
       <g id="key2" class="key" data-key="2" transform="translate(80,135)">
         <circle cx="0" cy="0" r="16" fill="var(--key2)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key2)"/>
@@ -147,7 +176,9 @@
 <script>
   const svg = document.querySelector("svg");
   const lock = document.getElementById("lock");
+  const door = document.getElementById("door");
   const message = document.getElementById("message");
+  const bigSuccess = document.getElementById("big-success");
 
   const keys = [
     document.getElementById("key1"),
@@ -239,10 +270,18 @@
 
       if (id === correctKey) {
         solved = true;
-        message.innerHTML = `<span>Success:</span> You found the key for your company. Opening profile…`;
+
+        // Door opening animation
+        door.classList.add("door-open");
+
+        // Big success message
+        bigSuccess.classList.add("show");
+
+        // Open LinkedIn after delay
         setTimeout(() => {
           window.open("https://www.linkedin.com/in/adrian-garcia-3b3b26a3/", "_blank");
-        }, 700);
+        }, 1200);
+
       } else {
         message.innerHTML = `<span>Incorrect:</span> This key does not match the lock. Try another one.`;
       }
