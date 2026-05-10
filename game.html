@@ -58,120 +58,24 @@
         align-items: center;
         font-size: 70px;
         font-weight: bold;
-        color: red;
     }
 
-    /* FRONT now shows the color */
+    /* FRONT shows the color */
     .front {
         background: var(--card-color);
     }
 
+    /* BACK shows X or stays blank */
     .back {
-        transform: rotateY(180deg);
         background: white;
+        transform: rotateY(180deg);
+        color: red;
     }
 
     /* Shuffle animation */
     @keyframes shuffle {
         0% { transform: translateX(0) rotate(0deg); }
-        25% { transform: translateX(-10px) rotate(-5deg); }
+        25% { transform: translateX(-10px) rotate(-150deg); }
         50% { transform: translateX(10px) rotate(5deg); }
-        75% { transform: translateX(-5px) rotate(-3deg); }
-        100% { transform: translateX(0) rotate(0deg); }
-    }
-
-    .shuffle {
-        animation: shuffle 0.3s ease-in-out infinite;
-    }
-
-    #message {
-        margin-top: 40px;
-        font-size: 32px;
-        font-weight: bold;
-        color: #0a7a0a;
-        display: none;
-    }
-</style>
-</head>
-<body>
-
-<h2>Select the correct card</h2>
-
-<div class="cards">
-    <div class="card" onclick="checkCard(1)">
-        <div class="inner">
-            <div class="front" style="--card-color:red"></div>
-            <div class="back" id="back1"></div>
-        </div>
-    </div>
-
-    <div class="card" onclick="checkCard(2)">
-        <div class="inner">
-            <div class="front" style="--card-color:blue"></div>
-            <div class="back" id="back2"></div>
-        </div>
-    </div>
-
-    <div class="card" onclick="checkCard(3)">
-        <div class="inner">
-            <div class="front" style="--card-color:green"></div>
-            <div class="back" id="back3"></div>
-        </div>
-    </div>
-
-    <div class="card" onclick="checkCard(4)">
-        <div class="inner">
-            <div class="front" style="--card-color:orange"></div>
-            <div class="back" id="back4"></div>
-        </div>
-    </div>
-
-    <div class="card" onclick="checkCard(5)">
-        <div class="inner">
-            <div class="front" style="--card-color:purple"></div>
-            <div class="back" id="back5"></div>
-        </div>
-    </div>
-
-    <div class="card" onclick="checkCard(6)">
-        <div class="inner">
-            <div class="front" style="--card-color:yellow"></div>
-            <div class="back" id="back6"></div>
-        </div>
-    </div>
-</div>
-
-<div id="message">You have chosen correctly, the player that your company is missing</div>
-
-<script>
-    const correctCard = Math.floor(Math.random() * 6) + 1;
-    let alreadyChosen = false;
-
-    // Shuffle animation on load
-    const allCards = document.querySelectorAll(".inner");
-    allCards.forEach(card => card.classList.add("shuffle"));
-
-    setTimeout(() => {
-        allCards.forEach(card => card.classList.remove("shuffle"));
-    }, 1500);
-
-    function checkCard(num) {
-        if (alreadyChosen) return;
-
-        const card = document.querySelectorAll(".inner")[num - 1];
-        const back = document.getElementById("back" + num);
-
-        card.classList.add("flipped");
-
-        if (num === correctCard) {
-            alreadyChosen = true;
-
-            // Glow effect
-            setTimeout(() => {
-                card.classList.add("glow");
-            }, 600);
-
-            // Big message
-            setTimeout(() => {
-
-                       
+        75% { transform: translateX(-5px) rotate(-150deg); }
+        100% { transform: translate
