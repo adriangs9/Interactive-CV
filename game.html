@@ -145,10 +145,22 @@
 <script>
   const cards = document.querySelectorAll('.card');
   const message = document.getElementById('message');
-  const correctCard = Math.floor(Math.random() * 6) + 1;
+
+  // Retrieve last correct card
+  const lastCorrect = Number(localStorage.getItem("lastCorrectCard"));
+
+  // Generate a new correct card that is NOT the same as last time
+  let correctCard;
+  do {
+    correctCard = Math.floor(Math.random() * 6) + 1;
+  } while (correctCard === lastCorrect);
+
+  // Save new correct card
+  localStorage.setItem("lastCorrectCard", correctCard);
+
   let locked = false;
 
-  // Shuffle animation on load
+  // Shuffle animation
   cards.forEach(card => card.classList.add('shuffling'));
   setTimeout(() => {
     cards.forEach(card => card.classList.remove('shuffling'));
@@ -174,6 +186,7 @@
         setTimeout(() => {
           window.location.href = 'https://www.linkedin.com/in/adrian-garcia-3b3b26a3/';
         }, 3000);
+
       } else {
         back.textContent = '✖';
 
