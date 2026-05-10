@@ -15,10 +15,7 @@
   /* INTRO SCREEN */
   #intro {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: white;
     display: flex;
     align-items: center;
@@ -26,13 +23,8 @@
     font-size: 32px;
     font-weight: bold;
     opacity: 0;
-    animation: fadeIn 1.5s forwards;
+    transition: opacity 1.5s ease;
     z-index: 10;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
   }
 
   h2 {
@@ -177,37 +169,45 @@
   const cards = document.querySelectorAll('.card');
   const message = document.getElementById('message');
   const restartBtn = document.getElementById('restartBtn');
+  const intro = document.getElementById('intro');
 
-  // Retrieve last correct card
+  // ---- Correct card logic (no repeat) ----
   const lastCorrect = Number(localStorage.getItem("lastCorrectCard"));
-
-  // Generate a new correct card that is NOT the same as last time
   let correctCard;
   do {
     correctCard = Math.floor(Math.random() * 6) + 1;
   } while (correctCard === lastCorrect);
-
   localStorage.setItem("lastCorrectCard", correctCard);
 
   let locked = false;
 
-  // 1) INTRO FIRST → THEN SHUFFLE
-  setTimeout(() => {
-    document.getElementById('intro').style.display = 'none';
+  // ---- Intro fade-in, then fade-out, then shuffle ----
+  window.addEventListener('load', () => {
+    // Fade in
+    intro.style.opacity = '1';
 
-    const container = document.querySelector(".cards");
-    const cardArray = Array.from(cards);
+    // After 1.5s, fade out
+    setTimeout(() => {
+      intro.style.opacity = '0';
 
-    const shuffled = cardArray
-      .map(card => ({ card, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(obj => obj.card);
+      // After fade-out completes, hide intro and shuffle cards
+      setTimeout(() => {
+        intro.style.display = 'none';
 
-    shuffled.forEach(card => container.appendChild(card));
+        const container = document.querySelector('.cards');
+        const cardArray = Array.from(cards);
 
-  }, 2000);
+        const shuffled = cardArray
+          .map(card => ({ card, sort: Math.random() }))
+          .sort((a, b) => a.sort - b.sort)
+          .map(obj => obj.card);
 
-  // CARD CLICK LOGIC
+        shuffled.forEach(card => container.appendChild(card));
+      }, 500); // small buffer after opacity 0
+    }, 1500);
+  });
+
+  // ---- Card click logic ----
   cards.forEach(card => {
     card.addEventListener('click', () => {
       if (locked) return;
