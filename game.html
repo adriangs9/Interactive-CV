@@ -18,6 +18,10 @@
     --key3: #3b82f6;
   }
 
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
     height: 100vh;
@@ -27,6 +31,7 @@
     align-items: center;
     font-family: system-ui, sans-serif;
     color: var(--text);
+    user-select: none;
   }
 
   #wrapper {
@@ -58,6 +63,7 @@
   .key {
     cursor: grab;
     transition: opacity 0.2s ease-out, transform 0.15s ease-out;
+    pointer-events: all;
   }
 
   .key.dragging {
@@ -143,21 +149,21 @@
         </g>
       </g>
 
-      <g id="key1" class="key" data-key="1" transform="translate(80,70)">
+      <g id="key1" class="key" data-key="1" transform="translate(80,70)" pointer-events="bounding-box">
         <circle cx="0" cy="0" r="16" fill="var(--key1)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key1)"/>
         <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key1)"/>
         <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key1)"/>
       </g>
 
-      <g id="key2" class="key" data-key="2" transform="translate(80,135)">
+      <g id="key2" class="key" data-key="2" transform="translate(80,135)" pointer-events="bounding-box">
         <circle cx="0" cy="0" r="16" fill="var(--key2)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key2)"/>
         <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key2)"/>
         <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key2)"/>
       </g>
 
-      <g id="key3" class="key" data-key="3" transform="translate(80,200)">
+      <g id="key3" class="key" data-key="3" transform="translate(80,200)" pointer-events="bounding-box">
         <circle cx="0" cy="0" r="16" fill="var(--key3)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key3)"/>
         <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key3)"/>
@@ -173,3 +179,135 @@
 </div>
 
 <script>
+  const svg = document.querySelector("svg");
+  const lock = document.getElementById("lock");
+  const door = document.getElementById("door");
+  const message = document.getElementById("message");
+  const bigSuccess = document.getElementById("big-success");
+
+  const keys = [
+    document.getElementById("key1"),
+    document.getElementById("key2"),
+    document.getElementById("key3")
+  ];
+
+  const correctKey = 3;
+  let dragging = false;
+  let activeKey = null;
+  let offsetX = 0;
+  let offsetY = 0;
+  let used = new Set();
+  let solved = false;
+
+  function svgPoint(evt) {
+    const pt = svg.createSVGPoint();
+    pt.x = evt.clientX;
+    pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  function onPointerDown(e) {
+    const key = e.currentTarget;
+    const id = parseInt(key.dataset.key, 10);
+
+    if (solved || used.has(id)) return;
+
+    e.preventDefault();
+    key.setPointerCapture(e.pointerId);
+
+    dragging = true;
+    activeKey = key;
+
+    const pt = svgPoint(e);
+    const t = key.transform.baseVal.consolidate();
+    const x = t ? t.matrix.e : 0;
+    const y = t ? t.matrix.f : 0;
+
+    offsetX = pt.x - x;
+    offsetY = pt.y - y;
+
+    key.classList.add("dragging");
+  }
+
+  function onPointerMove(e) {
+    if (!dragging || !activeKey) return;
+    e.preventDefault();
+
+    const pt = svgPoint(e);
+    const x = pt.x - offsetX;
+    const y = pt.y - offsetY;
+
+    activeKey.setAttribute("transform", `translate(${x},${y})`);
+  }
+
+  function onPointerUp(e) {
+    if (!dragging || !activeKey) return;
+    e.preventDefault();
+
+    const key = activeKey;
+    const id = parseInt(key.dataset.key, 10);
+
+    dragging = false;
+    key.classList.remove("dragging");
+    key.releasePointerCapture(e.pointerId);
+
+    checkCollision(key, id);
+    activeKey = null;
+  }
+
+  function centerBox(el) {
+    const b = el.getBBox();
+    return {
+      x: b.x + b.width / 2,
+      y: b.y + b.height / 2,
+      w: b.width,
+      h: b.height
+    };
+  }
+
+  function checkCollision(key, id) {
+    const k = centerBox(key);
+    const l = centerBox(lock);
+
+    const overlap =
+      k.x + k.w/2 > l.x - l.w/2 &&
+      k.x - k.w/2 < l.x + l.w/2 &&
+      k.y + k.h/2 > l.y - l.h/2 &&
+      k.y - k.h/2 < l.y + l.h/2;
+
+    if (overlap) {
+      used.add(id);
+      key.classList.add("used");
+      key.classList.add("bounce");
+
+      if (id === correctKey) {
+        solved = true;
+
+        door.classList.add("door-open");
+
+        setTimeout(() => {
+          bigSuccess.classList.add("show");
+        }, 400);
+
+        setTimeout(() => {
+          window.open("https://www.linkedin.com/in/adrian-garcia-3b3b26a3/", "_blank");
+        }, 4000);
+      } else {
+        message.innerHTML = `<span>Incorrect:</span> This key does not match the lock. Try another one.`;
+      }
+    } else {
+      message.innerHTML = `<span>Instruction:</span> Click and drag a key. Only one key will open the door.`;
+    }
+  }
+
+  keys.forEach(k => {
+    k.addEventListener("pointerdown", onPointerDown);
+  });
+
+  svg.addEventListener("pointermove", onPointerMove);
+  svg.addEventListener("pointerup", onPointerUp);
+  svg.addEventListener("pointerleave", onPointerUp);
+</script>
+
+</body>
+</html>
