@@ -178,11 +178,6 @@
   const message = document.getElementById('message');
   const restartBtn = document.getElementById('restartBtn');
 
-  // Remove intro screen after fade-in
-  setTimeout(() => {
-    document.getElementById('intro').style.display = 'none';
-  }, 2000);
-
   // Retrieve last correct card
   const lastCorrect = Number(localStorage.getItem("lastCorrectCard"));
 
@@ -192,24 +187,27 @@
     correctCard = Math.floor(Math.random() * 6) + 1;
   } while (correctCard === lastCorrect);
 
-  // Save new correct card
   localStorage.setItem("lastCorrectCard", correctCard);
 
   let locked = false;
 
-  // REAL SHUFFLE (no shaking)
-  const container = document.querySelector(".cards");
-  const cardArray = Array.from(cards);
-
+  // 1) INTRO FIRST → THEN SHUFFLE
   setTimeout(() => {
+    document.getElementById('intro').style.display = 'none';
+
+    const container = document.querySelector(".cards");
+    const cardArray = Array.from(cards);
+
     const shuffled = cardArray
       .map(card => ({ card, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(obj => obj.card);
 
     shuffled.forEach(card => container.appendChild(card));
-  }, 800);
 
+  }, 2000);
+
+  // CARD CLICK LOGIC
   cards.forEach(card => {
     card.addEventListener('click', () => {
       if (locked) return;
