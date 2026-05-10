@@ -18,10 +18,6 @@
     --key3: #3b82f6;
   }
 
-  * {
-    box-sizing: border-box;
-  }
-
   body {
     margin: 0;
     height: 100vh;
@@ -54,55 +50,22 @@
     overflow: hidden;
   }
 
-  svg {
-    width: 100%;
-    height: 100%;
-    touch-action: none;
-  }
-
-  .key {
-    cursor: grab;
-    transition: opacity 0.2s ease-out, transform 0.15s ease-out;
-    pointer-events: all;
-  }
-
-  .key.dragging {
-    cursor: grabbing;
-    transform: scale(1.05);
-  }
-
-  .key.used {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-
-  .bounce {
-    animation: bounce 0.25s ease-out;
-  }
-
-  @keyframes bounce {
-    0% { transform: translateX(0); }
-    40% { transform: translateX(-8px); }
-    70% { transform: translateX(3px); }
-    100% { transform: translateX(0); }
-  }
-
-  .door-open {
-    animation: openDoor 1.2s ease-out forwards;
+  /* DOOR */
+  #door-container {
+    position: absolute;
+    top: 40px;
+    left: 380px;
+    width: 140px;
+    height: 200px;
     transform-origin: left center;
+    transition: transform 1.2s ease-out;
   }
 
-  @keyframes openDoor {
-    from { transform: rotateY(0deg); }
-    to { transform: rotateY(-85deg); }
+  #door-container.open {
+    transform: perspective(600px) rotateY(-85deg);
   }
 
-  #message {
-    margin-top: 12px;
-    font-size: 14px;
-    color: var(--muted);
-  }
-
+  /* BIG SUCCESS MESSAGE */
   #big-success {
     position: absolute;
     top: 42%;
@@ -122,6 +85,30 @@
   #big-success.show {
     opacity: 1;
   }
+
+  /* DRAGGABLE KEYS */
+  .key {
+    position: absolute;
+    width: 120px;
+    height: 40px;
+    cursor: grab;
+    transition: opacity 0.2s ease-out;
+  }
+
+  .key.used {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  #key1 { top: 70px; left: 60px; }
+  #key2 { top: 135px; left: 60px; }
+  #key3 { top: 200px; left: 60px; }
+
+  #message {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
+  }
 </style>
 </head>
 <body>
@@ -131,183 +118,7 @@
   <div id="big-success">You found the key for your company!</div>
 
   <div id="game-area">
-    <svg viewBox="0 0 600 260">
 
-      <g id="door-group" transform="translate(380,40)">
-        <g id="door">
-          <rect x="0" y="0" width="140" height="200" rx="10"
-                fill="var(--door)" stroke="var(--door-edge)" stroke-width="2"/>
-          <rect x="20" y="22" width="100" height="60" rx="6" fill="#e2e8f0"/>
-          <rect x="20" y="112" width="100" height="60" rx="6" fill="#e2e8f0"/>
-        </g>
-
-        <g id="lock" transform="translate(104,88)">
-          <rect x="0" y="0" width="24" height="42" rx="7"
-                fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
-          <circle cx="12" cy="17" r="4" fill="#1f2937"/>
-          <rect x="10" y="19" width="4" height="11" rx="2" fill="#1f2937"/>
-        </g>
-      </g>
-
-      <g id="key1" class="key" data-key="1" transform="translate(80,70)" pointer-events="bounding-box">
-        <circle cx="0" cy="0" r="16" fill="var(--key1)"/>
-        <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key1)"/>
-        <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key1)"/>
-        <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key1)"/>
-      </g>
-
-      <g id="key2" class="key" data-key="2" transform="translate(80,135)" pointer-events="bounding-box">
-        <circle cx="0" cy="0" r="16" fill="var(--key2)"/>
-        <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key2)"/>
-        <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key2)"/>
-        <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key2)"/>
-      </g>
-
-      <g id="key3" class="key" data-key="3" transform="translate(80,200)" pointer-events="bounding-box">
-        <circle cx="0" cy="0" r="16" fill="var(--key3)"/>
-        <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key3)"/>
-        <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key3)"/>
-        <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key3)"/>
-      </g>
-
-    </svg>
-  </div>
-
-  <div id="message">
-    <span>Instruction:</span> Click and drag a key. Only one key will open the door.
-  </div>
-</div>
-
-<script>
-  const svg = document.querySelector("svg");
-  const lock = document.getElementById("lock");
-  const door = document.getElementById("door");
-  const message = document.getElementById("message");
-  const bigSuccess = document.getElementById("big-success");
-
-  const keys = [
-    document.getElementById("key1"),
-    document.getElementById("key2"),
-    document.getElementById("key3")
-  ];
-
-  const correctKey = 3;
-  let dragging = false;
-  let activeKey = null;
-  let offsetX = 0;
-  let offsetY = 0;
-  let used = new Set();
-  let solved = false;
-
-  function svgPoint(evt) {
-    const pt = svg.createSVGPoint();
-    pt.x = evt.clientX;
-    pt.y = evt.clientY;
-    return pt.matrixTransform(svg.getScreenCTM().inverse());
-  }
-
-  function onPointerDown(e) {
-    const key = e.currentTarget;
-    const id = parseInt(key.dataset.key, 10);
-
-    if (solved || used.has(id)) return;
-
-    e.preventDefault();
-    key.setPointerCapture(e.pointerId);
-
-    dragging = true;
-    activeKey = key;
-
-    const pt = svgPoint(e);
-    const t = key.transform.baseVal.consolidate();
-    const x = t ? t.matrix.e : 0;
-    const y = t ? t.matrix.f : 0;
-
-    offsetX = pt.x - x;
-    offsetY = pt.y - y;
-
-    key.classList.add("dragging");
-  }
-
-  function onPointerMove(e) {
-    if (!dragging || !activeKey) return;
-    e.preventDefault();
-
-    const pt = svgPoint(e);
-    const x = pt.x - offsetX;
-    const y = pt.y - offsetY;
-
-    activeKey.setAttribute("transform", `translate(${x},${y})`);
-  }
-
-  function onPointerUp(e) {
-    if (!dragging || !activeKey) return;
-    e.preventDefault();
-
-    const key = activeKey;
-    const id = parseInt(key.dataset.key, 10);
-
-    dragging = false;
-    key.classList.remove("dragging");
-    key.releasePointerCapture(e.pointerId);
-
-    checkCollision(key, id);
-    activeKey = null;
-  }
-
-  function centerBox(el) {
-    const b = el.getBBox();
-    return {
-      x: b.x + b.width / 2,
-      y: b.y + b.height / 2,
-      w: b.width,
-      h: b.height
-    };
-  }
-
-  function checkCollision(key, id) {
-    const k = centerBox(key);
-    const l = centerBox(lock);
-
-    const overlap =
-      k.x + k.w/2 > l.x - l.w/2 &&
-      k.x - k.w/2 < l.x + l.w/2 &&
-      k.y + k.h/2 > l.y - l.h/2 &&
-      k.y - k.h/2 < l.y + l.h/2;
-
-    if (overlap) {
-      used.add(id);
-      key.classList.add("used");
-      key.classList.add("bounce");
-
-      if (id === correctKey) {
-        solved = true;
-
-        door.classList.add("door-open");
-
-        setTimeout(() => {
-          bigSuccess.classList.add("show");
-        }, 400);
-
-        setTimeout(() => {
-          window.open("https://www.linkedin.com/in/adrian-garcia-3b3b26a3/", "_blank");
-        }, 4000);
-      } else {
-        message.innerHTML = `<span>Incorrect:</span> This key does not match the lock. Try another one.`;
-      }
-    } else {
-      message.innerHTML = `<span>Instruction:</span> Click and drag a key. Only one key will open the door.`;
-    }
-  }
-
-  keys.forEach(k => {
-    k.addEventListener("pointerdown", onPointerDown);
-  });
-
-  svg.addEventListener("pointermove", onPointerMove);
-  svg.addEventListener("pointerup", onPointerUp);
-  svg.addEventListener("pointerleave", onPointerUp);
-</script>
-
-</body>
-</html>
+    <!-- DOOR (HTML container with SVG inside) -->
+    <div id="door-container">
+      <svg width="140" height="200">
