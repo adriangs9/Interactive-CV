@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>La llave que no entra</title>
+<style>
+  body {
+    background: #222;
+    color: #fff;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #game {
+    position: relative;
+    width: 600px;
+    height: 300px;
+    border: 2px solid #555;
+    background: #333;
+  }
+  #door {
+    position: absolute;
+    right: 80px;
+    top: 50px;
+    width: 120px;
+    height: 200px;
+    background: #654321;
+    border-radius: 4px;
+  }
+  #lock {
+    position: absolute;
+    right: 20px;
+    top: 130px;
+    width: 20px;
+    height: 40px;
+    background: #ccc;
+    border-radius: 5px;
+  }
+  #key {
+    position: absolute;
+    left: 40px;
+    top: 140px;
+    width: 80px;
+    height: 20px;
+    background: gold;
+    border-radius: 10px;
+    cursor: grab;
+  }
+  #message {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="door"></div>
+  <div id="lock"></div>
+  <div id="key"></div>
+  <div id="message">Arrastra la llave hacia la cerradura...</div>
+</div>
+
+<script>
+  const key = document.getElementById('key');
+  const lock = document.getElementById('lock');
+  const msg = document.getElementById('message');
+
+  let dragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  key.addEventListener('mousedown', (e) => {
+    dragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    key.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mouseup', () => {
+    dragging = false;
+    key.style.cursor = 'grab';
+    checkCollision();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const rect = key.parentElement.getBoundingClientRect();
+    const x = e.clientX - rect.left - offsetX;
+    const y = e.clientY - rect.top - offsetY;
+    key.style.left = x + 'px';
+    key.style.top = y + 'px';
+  });
+
+  function checkCollision() {
+    const keyRect = key.getBoundingClientRect();
+    const lockRect = lock.getBoundingClientRect();
+
+    const overlap =
+      keyRect.right > lockRect.left &&
+      keyRect.left < lockRect.right &&
+      keyRect.bottom > lockRect.top &&
+      keyRect.top < lockRect.bottom;
+
+    if (overlap) {
+      msg.textContent = 'La llave no entra... parece que no es la correcta.';
+      // Opcional: mover un poco la llave hacia atrás para que se note que “rebota”
+      key.style.left = (parseInt(key.style.left) - 20) + 'px';
+    } else {
+      msg.textContent = 'Arrastra la llave hacia la cerradura...';
+    }
+  }
+</script>
+</body>
+</html>
