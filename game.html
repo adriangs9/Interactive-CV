@@ -265,3 +265,206 @@
 </head>
 <body>
 <div id="game-wrapper">
+  <div id="header">
+    <div id="title">Key–lock interaction</div>
+    <div id="status-pill">
+      <div id="status-dot"></div>
+      Interactive decision micro–test
+    </div>
+  </div>
+
+  <div id="game-panel">
+    <div id="game-area">
+      <svg viewBox="0 0 600 260">
+        <!-- Background particles -->
+        <circle class="bg-particle" cx="80" cy="210" r="16" />
+        <circle class="bg-particle" cx="520" cy="40" r="12" />
+        <circle class="bg-particle" cx="300" cy="60" r="9" />
+
+        <!-- Orbit line -->
+        <ellipse class="bg-orbit" cx="300" cy="130" rx="260" ry="110" />
+
+        <!-- Door group -->
+        <g id="door-group" transform="translate(380,40)">
+          <rect class="door-body" x="0" y="0" width="140" height="200" rx="10" />
+          <rect class="door-panel" x="20" y="22" width="100" height="60" rx="6" />
+          <rect class="door-panel" x="20" y="112" width="100" height="60" rx="6" />
+          <!-- Lock -->
+          <g id="lock" transform="translate(104,88)">
+            <rect class="lock-body" x="0" y="0" width="24" height="42" rx="7" />
+            <circle class="lock-keyhole" cx="12" cy="17" r="4" />
+            <rect class="lock-keyhole" x="10" y="19" width="4" height="11" rx="2" />
+          </g>
+        </g>
+
+        <!-- Keys -->
+        <!-- Key 1 (wrong) -->
+        <g id="key1" class="key-shape key-silver" data-key-index="1" transform="translate(80,70)">
+          <circle cx="0" cy="0" r="16" />
+          <circle cx="0" cy="0" r="7" fill="#f9fafb" />
+          <rect x="16" y="-5" width="70" height="10" rx="4" />
+          <rect x="60" y="5" width="10" height="9" rx="2" />
+          <rect x="48" y="5" width="9" height="9" rx="2" />
+        </g>
+
+        <!-- Key 2 (wrong) -->
+        <g id="key2" class="key-shape key-gold" data-key-index="2" transform="translate(80,135)">
+          <circle cx="0" cy="0" r="16" />
+          <circle cx="0" cy="0" r="7" fill="#f9fafb" />
+          <rect x="16" y="-5" width="70" height="10" rx="4" />
+          <rect x="60" y="5" width="10" height="9" rx="2" />
+          <rect x="48" y="5" width="9" height="9" rx="2" />
+        </g>
+
+        <!-- Key 3 (correct) -->
+        <g id="key3" class="key-shape key-blue" data-key-index="3" transform="translate(80,200)">
+          <circle cx="0" cy="0" r="16" />
+          <circle cx="0" cy="0" r="7" fill="#f9fafb" />
+          <rect x="16" y="-5" width="70" height="10" rx="4" />
+          <rect x="60" y="5" width="10" height="9" rx="2" />
+          <rect x="48" y="5" width="9" height="9" rx="2" />
+        </g>
+      </svg>
+
+      <div id="hint">
+        <div id="hint-icon">i</div>
+        Use one key per attempt. Only one will truly fit.
+      </div>
+    </div>
+
+    <div id="message">
+      <span>Instruction:</span> Drag a key toward the lock. The first two are wrong. The third one is correct and will open a new professional door.
+    </div>
+
+    <div id="legend">
+      <div class="legend-item">
+        <div class="legend-swatch swatch-silver"></div>
+        Wrong key – attempt 1
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch swatch-gold"></div>
+        Wrong key – attempt 2
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch swatch-blue"></div>
+        Correct key – opens LinkedIn profile
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const svg = document.querySelector('svg');
+  const lock = document.getElementById('lock');
+  const msg = document.getElementById('message');
+
+  const keys = [
+    document.getElementById('key1'),
+    document.getElementById('key2'),
+    document.getElementById('key3')
+  ];
+
+  const correctKeyIndex = 3; // key3
+  let dragging = false;
+  let activeKey = null;
+  let offsetX = 0;
+  let offsetY = 0;
+  let usedKeys = new Set();
+  let puzzleSolved = false;
+
+  function getSVGPoint(evt) {
+    const pt = svg.createSVGPoint();
+    pt.x = evt.clientX;
+    pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  function onKeyMouseDown(e) {
+    const key = e.currentTarget;
+    const index = parseInt(key.getAttribute('data-key-index'), 10);
+
+    if (puzzleSolved) return;
+    if (usedKeys.has(index)) return; // already used this key
+
+    dragging = true;
+    activeKey = key;
+
+    const pt = getSVGPoint(e);
+    const transform = key.transform.baseVal.consolidate();
+    const currentX = transform ? transform.matrix.e : 0;
+    const currentY = transform ? transform.matrix.f : 0;
+
+    offsetX = pt.x - currentX;
+    offsetY = pt.y - currentY;
+
+    key.classList.add('grabbing');
+  }
+
+  function onMouseUp() {
+    if (!dragging || !activeKey) return;
+    dragging = false;
+    activeKey.classList.remove('grabbing');
+
+    const index = parseInt(activeKey.getAttribute('data-key-index'), 10);
+    checkCollision(activeKey, index);
+    activeKey = null;
+  }
+
+  function onMouseMove(e) {
+    if (!dragging || !activeKey) return;
+    const pt = getSVGPoint(e);
+    const x = pt.x - offsetX;
+    const y = pt.y - offsetY;
+    activeKey.setAttribute('transform', `translate(${x},${y})`);
+  }
+
+  function getBBoxCenter(element) {
+    const bbox = element.getBBox();
+    return {
+      x: bbox.x + bbox.width / 2,
+      y: bbox.y + bbox.height / 2,
+      width: bbox.width,
+      height: bbox.height
+    };
+  }
+
+  function checkCollision(key, index) {
+    const keyBox = getBBoxCenter(key);
+    const lockBox = getBBoxCenter(lock);
+
+    const overlap =
+      keyBox.x + keyBox.width / 2 > lockBox.x - lockBox.width / 2 &&
+      keyBox.x - keyBox.width / 2 < lockBox.x + lockBox.width / 2 &&
+      keyBox.y + keyBox.height / 2 > lockBox.y - lockBox.height / 2 &&
+      keyBox.y - keyBox.height / 2 < lockBox.y + lockBox.height / 2;
+
+    if (overlap) {
+      usedKeys.add(index);
+      key.classList.add('key-disabled');
+      key.classList.add('bounce');
+
+      setTimeout(() => key.classList.remove('bounce'), 260);
+
+      if (index === correctKeyIndex) {
+        puzzleSolved = true;
+        msg.innerHTML = `<span>Result:</span> The right key fits. Opening LinkedIn profile…`;
+        setTimeout(() => {
+          window.open('https://www.linkedin.com/in/adrian-garcia-3b3b26a3/', '_blank');
+        }, 600);
+      } else {
+        msg.innerHTML = `<span>Feedback:</span> This key doesn’t match the lock. Try another option.`;
+      }
+    } else {
+      msg.innerHTML = `<span>Instruction:</span> Drag a key toward the lock. The first two are wrong. The third one is correct and will open a new professional door.`;
+    }
+  }
+
+  keys.forEach(key => {
+    key.addEventListener('mousedown', onKeyMouseDown);
+  });
+
+  document.addEventListener('mouseup', onMouseUp);
+  document.addEventListener('mousemove', onMouseMove);
+</script>
+</body>
+</html>
