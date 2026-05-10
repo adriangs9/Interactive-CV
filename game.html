@@ -2,103 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>The Right Key – Formal SVG Puzzle</title>
+<title>Find the Right Key</title>
 <style>
   :root {
-    --bg: #f3f4f6;
+    --bg: #f5f7fa;
     --panel: #ffffff;
-    --border-soft: #e5e7eb;
-    --border-strong: #d1d5db;
+    --border: #d1d5db;
     --accent: #2563eb;
-    --accent-soft: #dbeafe;
-    --text-main: #111827;
-    --text-muted: #6b7280;
+    --text: #1f2937;
+    --muted: #6b7280;
     --door: #e5e7eb;
-    --door-edge: #cbd5f5;
-    --key-gold: #fbbf24;
-    --key-silver: #9ca3af;
-    --key-blue: #3b82f6;
-  }
-
-  * {
-    box-sizing: border-box;
+    --door-edge: #cbd5e1;
+    --key1: #9ca3af;
+    --key2: #fbbf24;
+    --key3: #3b82f6;
   }
 
   body {
     margin: 0;
     height: 100vh;
+    background: var(--bg);
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at top, #e5edff 0, #f3f4f6 40%, #e5e7eb 100%);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color: var(--text-main);
+    font-family: system-ui, sans-serif;
+    color: var(--text);
   }
 
-  #game-wrapper {
-    width: 780px;
-    max-width: 100%;
-    padding: 20px 24px 22px;
+  #wrapper {
+    width: 760px;
     background: var(--panel);
-    border-radius: 18px;
-    border: 1px solid var(--border-soft);
-    box-shadow:
-      0 18px 40px rgba(15, 23, 42, 0.12),
-      0 0 0 1px rgba(148, 163, 184, 0.25);
-    position: relative;
-  }
-
-  #header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-  }
-
-  #title {
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #4b5563;
-  }
-
-  #status-pill {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(37, 99, 235, 0.35);
-    color: #1d4ed8;
-    background: linear-gradient(135deg, #eff6ff, #ffffff);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  #status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 999px;
-    background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-  }
-
-  #game-panel {
-    position: relative;
-    background: #f9fafb;
-    border-radius: 14px;
-    border: 1px solid var(--border-soft);
-    padding: 16px 16px 14px;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   }
 
   #game-area {
-    position: relative;
-    width: 100%;
     height: 260px;
-    background: radial-gradient(circle at top, #e5edff 0, #f9fafb 45%, #e5e7eb 100%);
     border-radius: 12px;
+    border: 1px solid var(--border);
+    background: linear-gradient(to bottom, #f8fafc, #eef2f7);
+    position: relative;
     overflow: hidden;
-    border: 1px solid #e5e7eb;
   }
 
   svg {
@@ -106,365 +52,209 @@
     height: 100%;
   }
 
+  .key {
+    cursor: grab;
+    transition: opacity 0.2s ease-out, transform 0.15s ease-out;
+  }
+
+  .key.grabbing {
+    cursor: grabbing;
+    transform: scale(1.05);
+  }
+
+  .key.used {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .bounce {
+    animation: bounce 0.25s ease-out;
+  }
+
+  @keyframes bounce {
+    0% { transform: translateX(0); }
+    40% { transform: translateX(-8px); }
+    70% { transform: translateX(3px); }
+    100% { transform: translateX(0); }
+  }
+
   #message {
-    margin-top: 10px;
-    font-size: 13px;
-    text-align: left;
-    color: var(--text-muted);
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
   }
 
   #message span {
     color: var(--accent);
-    font-weight: 500;
+    font-weight: 600;
   }
-
-  #hint {
-    position: absolute;
-    bottom: 10px;
-    right: 16px;
-    font-size: 11px;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    opacity: 0.9;
-  }
-
-  #hint-icon {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    border: 1px solid #cbd5f5;
-    background: #eff6ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    color: #1d4ed8;
-  }
-
-  .door-body {
-    fill: var(--door);
-    stroke: var(--door-edge);
-    stroke-width: 2;
-  }
-
-  .door-panel {
-    fill: #e0e7ff;
-    opacity: 0.9;
-  }
-
-  .lock-body {
-    fill: #ffffff;
-    stroke: #cbd5f5;
-    stroke-width: 1.2;
-  }
-
-  .lock-keyhole {
-    fill: #1f2937;
-  }
-
-  .key-shape {
-    cursor: grab;
-    filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.25));
-    transition: transform 0.15s ease-out, opacity 0.2s ease-out;
-  }
-
-  .key-shape.grabbing {
-    cursor: grabbing;
-    transform: scale(1.03);
-  }
-
-  .key-disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    filter: none;
-  }
-
-  .key-gold {
-    fill: var(--key-gold);
-  }
-
-  .key-silver {
-    fill: var(--key-silver);
-  }
-
-  .key-blue {
-    fill: var(--key-blue);
-  }
-
-  .bg-orbit {
-    fill: none;
-    stroke: rgba(37, 99, 235, 0.18);
-    stroke-width: 1.2;
-    stroke-dasharray: 4 6;
-    animation: orbit 16s linear infinite;
-  }
-
-  .bg-particle {
-    fill: rgba(148, 163, 184, 0.55);
-    animation: float 12s ease-in-out infinite alternate;
-  }
-
-  .bg-particle:nth-child(2) { animation-duration: 15s; }
-  .bg-particle:nth-child(3) { animation-duration: 18s; }
-
-  @keyframes orbit {
-    to {
-      stroke-dashoffset: -220;
-    }
-  }
-
-  @keyframes float {
-    from {
-      transform: translateY(0px);
-      opacity: 0.5;
-    }
-    to {
-      transform: translateY(-16px);
-      opacity: 0.9;
-    }
-  }
-
-  .bounce {
-    animation: bounce-back 0.25s ease-out;
-  }
-
-  @keyframes bounce-back {
-    0%   { transform: translateX(0); }
-    40%  { transform: translateX(-8px); }
-    70%  { transform: translateX(3px); }
-    100% { transform: translateX(0); }
-  }
-
-  #legend {
-    margin-top: 8px;
-    font-size: 11px;
-    color: #6b7280;
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
-
-  .legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .legend-swatch {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-  }
-
-  .swatch-gold { background: var(--key-gold); }
-  .swatch-silver { background: var(--key-silver); }
-  .swatch-blue { background: var(--key-blue); }
 </style>
 </head>
 <body>
-<div id="game-wrapper">
-  <div id="header">
-    <div id="title">Key–lock interaction</div>
-    <div id="status-pill">
-      <div id="status-dot"></div>
-      Interactive decision micro–test
-    </div>
+
+<div id="wrapper">
+  <div id="game-area">
+    <svg viewBox="0 0 600 260">
+
+      <!-- Door -->
+      <g id="door" transform="translate(380,40)">
+        <rect x="0" y="0" width="140" height="200" rx="10"
+              fill="var(--door)" stroke="var(--door-edge)" stroke-width="2"/>
+        <rect x="20" y="22" width="100" height="60" rx="6" fill="#e2e8f0"/>
+        <rect x="20" y="112" width="100" height="60" rx="6" fill="#e2e8f0"/>
+
+        <!-- Lock -->
+        <g id="lock" transform="translate(104,88)">
+          <rect x="0" y="0" width="24" height="42" rx="7"
+                fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+          <circle cx="12" cy="17" r="4" fill="#1f2937"/>
+          <rect x="10" y="19" width="4" height="11" rx="2" fill="#1f2937"/>
+        </g>
+      </g>
+
+      <!-- Key 1 (wrong) -->
+      <g id="key1" class="key" data-key="1" transform="translate(80,70)">
+        <circle cx="0" cy="0" r="16" fill="var(--key1)"/>
+        <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key1)"/>
+        <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key1)"/>
+        <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key1)"/>
+      </g>
+
+      <!-- Key 2 (wrong) -->
+      <g id="key2" class="key" data-key="2" transform="translate(80,135)">
+        <circle cx="0" cy="0" r="16" fill="var(--key2)"/>
+        <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key2)"/>
+        <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key2)"/>
+        <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key2)"/>
+      </g>
+
+      <!-- Key 3 (correct) -->
+      <g id="key3" class="key" data-key="3" transform="translate(80,200)">
+        <circle cx="0" cy="0" r="16" fill="var(--key3)"/>
+        <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key3)"/>
+        <rect x="60" y="5" width="10" height="9" rx="2" fill="var(--key3)"/>
+        <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key3)"/>
+      </g>
+
+    </svg>
   </div>
 
-  <div id="game-panel">
-    <div id="game-area">
-      <svg viewBox="0 0 600 260">
-        <!-- Background particles -->
-        <circle class="bg-particle" cx="80" cy="210" r="16" />
-        <circle class="bg-particle" cx="520" cy="40" r="12" />
-        <circle class="bg-particle" cx="300" cy="60" r="9" />
-
-        <!-- Orbit line -->
-        <ellipse class="bg-orbit" cx="300" cy="130" rx="260" ry="110" />
-
-        <!-- Door group -->
-        <g id="door-group" transform="translate(380,40)">
-          <rect class="door-body" x="0" y="0" width="140" height="200" rx="10" />
-          <rect class="door-panel" x="20" y="22" width="100" height="60" rx="6" />
-          <rect class="door-panel" x="20" y="112" width="100" height="60" rx="6" />
-          <!-- Lock -->
-          <g id="lock" transform="translate(104,88)">
-            <rect class="lock-body" x="0" y="0" width="24" height="42" rx="7" />
-            <circle class="lock-keyhole" cx="12" cy="17" r="4" />
-            <rect class="lock-keyhole" x="10" y="19" width="4" height="11" rx="2" />
-          </g>
-        </g>
-
-        <!-- Keys -->
-        <!-- Key 1 (wrong) -->
-        <g id="key1" class="key-shape key-silver" data-key-index="1" transform="translate(80,70)">
-          <circle cx="0" cy="0" r="16" />
-          <circle cx="0" cy="0" r="7" fill="#f9fafb" />
-          <rect x="16" y="-5" width="70" height="10" rx="4" />
-          <rect x="60" y="5" width="10" height="9" rx="2" />
-          <rect x="48" y="5" width="9" height="9" rx="2" />
-        </g>
-
-        <!-- Key 2 (wrong) -->
-        <g id="key2" class="key-shape key-gold" data-key-index="2" transform="translate(80,135)">
-          <circle cx="0" cy="0" r="16" />
-          <circle cx="0" cy="0" r="7" fill="#f9fafb" />
-          <rect x="16" y="-5" width="70" height="10" rx="4" />
-          <rect x="60" y="5" width="10" height="9" rx="2" />
-          <rect x="48" y="5" width="9" height="9" rx="2" />
-        </g>
-
-        <!-- Key 3 (correct) -->
-        <g id="key3" class="key-shape key-blue" data-key-index="3" transform="translate(80,200)">
-          <circle cx="0" cy="0" r="16" />
-          <circle cx="0" cy="0" r="7" fill="#f9fafb" />
-          <rect x="16" y="-5" width="70" height="10" rx="4" />
-          <rect x="60" y="5" width="10" height="9" rx="2" />
-          <rect x="48" y="5" width="9" height="9" rx="2" />
-        </g>
-      </svg>
-
-      <div id="hint">
-        <div id="hint-icon">i</div>
-        Use one key per attempt. Only one will truly fit.
-      </div>
-    </div>
-
-    <div id="message">
-      <span>Instruction:</span> Drag a key toward the lock. The first two are wrong. The third one is correct and will open a new professional door.
-    </div>
-
-    <div id="legend">
-      <div class="legend-item">
-        <div class="legend-swatch swatch-silver"></div>
-        Wrong key – attempt 1
-      </div>
-      <div class="legend-item">
-        <div class="legend-swatch swatch-gold"></div>
-        Wrong key – attempt 2
-      </div>
-      <div class="legend-item">
-        <div class="legend-swatch swatch-blue"></div>
-        Correct key – opens LinkedIn profile
-      </div>
-    </div>
+  <div id="message">
+    <span>Instruction:</span> Click and hold a key to drag it. Only one key will open the door.
   </div>
 </div>
 
 <script>
-  const svg = document.querySelector('svg');
-  const lock = document.getElementById('lock');
-  const msg = document.getElementById('message');
+  const svg = document.querySelector("svg");
+  const lock = document.getElementById("lock");
+  const message = document.getElementById("message");
 
   const keys = [
-    document.getElementById('key1'),
-    document.getElementById('key2'),
-    document.getElementById('key3')
+    document.getElementById("key1"),
+    document.getElementById("key2"),
+    document.getElementById("key3")
   ];
 
-  const correctKeyIndex = 3; // key3
+  const correctKey = 3;
   let dragging = false;
   let activeKey = null;
   let offsetX = 0;
   let offsetY = 0;
-  let usedKeys = new Set();
-  let puzzleSolved = false;
+  let used = new Set();
+  let solved = false;
 
-  function getSVGPoint(evt) {
+  function svgPoint(evt) {
     const pt = svg.createSVGPoint();
     pt.x = evt.clientX;
     pt.y = evt.clientY;
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
 
-  function onKeyMouseDown(e) {
+  function startDrag(e) {
     const key = e.currentTarget;
-    const index = parseInt(key.getAttribute('data-key-index'), 10);
+    const id = parseInt(key.dataset.key);
 
-    if (puzzleSolved) return;
-    if (usedKeys.has(index)) return; // already used this key
+    if (solved || used.has(id)) return;
 
     dragging = true;
     activeKey = key;
 
-    const pt = getSVGPoint(e);
-    const transform = key.transform.baseVal.consolidate();
-    const currentX = transform ? transform.matrix.e : 0;
-    const currentY = transform ? transform.matrix.f : 0;
+    const pt = svgPoint(e);
+    const t = key.transform.baseVal.consolidate();
+    const x = t ? t.matrix.e : 0;
+    const y = t ? t.matrix.f : 0;
 
-    offsetX = pt.x - currentX;
-    offsetY = pt.y - currentY;
+    offsetX = pt.x - x;
+    offsetY = pt.y - y;
 
-    key.classList.add('grabbing');
+    key.classList.add("grabbing");
   }
 
-  function onMouseUp() {
+  function stopDrag() {
     if (!dragging || !activeKey) return;
-    dragging = false;
-    activeKey.classList.remove('grabbing');
 
-    const index = parseInt(activeKey.getAttribute('data-key-index'), 10);
-    checkCollision(activeKey, index);
+    dragging = false;
+    activeKey.classList.remove("grabbing");
+
+    const id = parseInt(activeKey.dataset.key);
+    checkCollision(activeKey, id);
+
     activeKey = null;
   }
 
-  function onMouseMove(e) {
+  function drag(e) {
     if (!dragging || !activeKey) return;
-    const pt = getSVGPoint(e);
+
+    const pt = svgPoint(e);
     const x = pt.x - offsetX;
     const y = pt.y - offsetY;
-    activeKey.setAttribute('transform', `translate(${x},${y})`);
+
+    activeKey.setAttribute("transform", `translate(${x},${y})`);
   }
 
-  function getBBoxCenter(element) {
-    const bbox = element.getBBox();
+  function centerBox(el) {
+    const b = el.getBBox();
     return {
-      x: bbox.x + bbox.width / 2,
-      y: bbox.y + bbox.height / 2,
-      width: bbox.width,
-      height: bbox.height
+      x: b.x + b.width / 2,
+      y: b.y + b.height / 2,
+      w: b.width,
+      h: b.height
     };
   }
 
-  function checkCollision(key, index) {
-    const keyBox = getBBoxCenter(key);
-    const lockBox = getBBoxCenter(lock);
+  function checkCollision(key, id) {
+    const k = centerBox(key);
+    const l = centerBox(lock);
 
     const overlap =
-      keyBox.x + keyBox.width / 2 > lockBox.x - lockBox.width / 2 &&
-      keyBox.x - keyBox.width / 2 < lockBox.x + lockBox.width / 2 &&
-      keyBox.y + keyBox.height / 2 > lockBox.y - lockBox.height / 2 &&
-      keyBox.y - keyBox.height / 2 < lockBox.y + lockBox.height / 2;
+      k.x + k.w/2 > l.x - l.w/2 &&
+      k.x - k.w/2 < l.x + l.w/2 &&
+      k.y + k.h/2 > l.y - l.h/2 &&
+      k.y - k.h/2 < l.y + l.h/2;
 
     if (overlap) {
-      usedKeys.add(index);
-      key.classList.add('key-disabled');
-      key.classList.add('bounce');
+      used.add(id);
+      key.classList.add("used");
+      key.classList.add("bounce");
 
-      setTimeout(() => key.classList.remove('bounce'), 260);
-
-      if (index === correctKeyIndex) {
-        puzzleSolved = true;
-        msg.innerHTML = `<span>Result:</span> The right key fits. Opening LinkedIn profile…`;
+      if (id === correctKey) {
+        solved = true;
+        message.innerHTML = `<span>Success:</span> You found the key for your company. Opening profile…`;
         setTimeout(() => {
-          window.open('https://www.linkedin.com/in/adrian-garcia-3b3b26a3/', '_blank');
-        }, 600);
+          window.open("https://www.linkedin.com/in/adrian-garcia-3b3b26a3/", "_blank");
+        }, 700);
       } else {
-        msg.innerHTML = `<span>Feedback:</span> This key doesn’t match the lock. Try another option.`;
+        message.innerHTML = `<span>Incorrect:</span> This key does not match the lock. Try another one.`;
       }
     } else {
-      msg.innerHTML = `<span>Instruction:</span> Drag a key toward the lock. The first two are wrong. The third one is correct and will open a new professional door.`;
+      message.innerHTML = `<span>Instruction:</span> Click and hold a key to drag it. Only one key will open the door.`;
     }
   }
 
-  keys.forEach(key => {
-    key.addEventListener('mousedown', onKeyMouseDown);
-  });
-
-  document.addEventListener('mouseup', onMouseUp);
-  document.addEventListener('mousemove', onMouseMove);
+  keys.forEach(k => k.addEventListener("mousedown", startDrag));
+  document.addEventListener("mouseup", stopDrag);
+  document.addEventListener("mousemove", drag);
 </script>
+
 </body>
 </html>
