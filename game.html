@@ -52,6 +52,7 @@
   svg {
     width: 100%;
     height: 100%;
+    touch-action: none;
   }
 
   .key {
@@ -80,7 +81,6 @@
     100% { transform: translateX(0); }
   }
 
-  /* Door opening animation */
   .door-open {
     animation: openDoor 1.2s ease-out forwards;
     transform-origin: left center;
@@ -97,11 +97,10 @@
     color: var(--muted);
   }
 
-  /* BIG SUCCESS MESSAGE BEHIND THE DOOR */
   #big-success {
     position: absolute;
     top: 42%;
-    left: 62%; /* positioned BEHIND the door */
+    left: 62%;
     transform: translate(-50%, -50%);
     font-size: 42px;
     font-weight: 800;
@@ -111,7 +110,7 @@
     text-align: center;
     pointer-events: none;
     line-height: 1.3;
-    z-index: 0; /* behind door */
+    z-index: 0;
   }
 
   #big-success.show {
@@ -123,13 +122,11 @@
 
 <div id="wrapper">
 
-  <!-- BIG MESSAGE BEHIND THE DOOR -->
   <div id="big-success">You found the key for your company!</div>
 
   <div id="game-area">
     <svg viewBox="0 0 600 260">
 
-      <!-- Door -->
       <g id="door-group" transform="translate(380,40)">
         <g id="door">
           <rect x="0" y="0" width="140" height="200" rx="10"
@@ -138,7 +135,6 @@
           <rect x="20" y="112" width="100" height="60" rx="6" fill="#e2e8f0"/>
         </g>
 
-        <!-- Lock -->
         <g id="lock" transform="translate(104,88)">
           <rect x="0" y="0" width="24" height="42" rx="7"
                 fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
@@ -147,7 +143,6 @@
         </g>
       </g>
 
-      <!-- Key 1 -->
       <g id="key1" class="key" data-key="1" transform="translate(80,70)">
         <circle cx="0" cy="0" r="16" fill="var(--key1)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key1)"/>
@@ -155,7 +150,6 @@
         <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key1)"/>
       </g>
 
-      <!-- Key 2 -->
       <g id="key2" class="key" data-key="2" transform="translate(80,135)">
         <circle cx="0" cy="0" r="16" fill="var(--key2)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key2)"/>
@@ -163,7 +157,6 @@
         <rect x="48" y="5" width="9" height="9" rx="2" fill="var(--key2)"/>
       </g>
 
-      <!-- Key 3 (correct) -->
       <g id="key3" class="key" data-key="3" transform="translate(80,200)">
         <circle cx="0" cy="0" r="16" fill="var(--key3)"/>
         <rect x="16" y="-5" width="70" height="10" rx="4" fill="var(--key3)"/>
@@ -180,20 +173,3 @@
 </div>
 
 <script>
-  const svg = document.querySelector("svg");
-  const lock = document.getElementById("lock");
-  const door = document.getElementById("door");
-  const message = document.getElementById("message");
-  const bigSuccess = document.getElementById("big-success");
-
-  const keys = [
-    document.getElementById("key1"),
-    document.getElementById("key2"),
-    document.getElementById("key3")
-  ];
-
-  const correctKey = 3;
-  let dragging = false;
-  let activeKey = null;
-  let offsetX = 0;
-  let
